@@ -1,0 +1,81 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=Noto+Serif+TC:wght@400;600&display=swap');
+@import "tailwindcss";
+
+/* Tailwind CSS v4 主題配置 - 日式簡約風格 */
+@theme {
+  /* 日式配色 */
+  --color-sand-50: #faf8f5;
+  --color-sand-100: #f5f1ea;
+  --color-sand-200: #e8dfd0;
+  --color-sand-300: #d4c4ab;
+  --color-sand-400: #bca687;
+  --color-sand-500: #a38968;
+  --color-sand-600: #8a7255;
+  --color-sand-700: #6f5c45;
+  --color-sand-800: #5c4c3a;
+  --color-sand-900: #4d4033;
+  
+  --color-warm-50: #fef5ee;
+  --color-warm-100: #fde8d7;
+  --color-warm-200: #facead;
+  --color-warm-300: #f7ab79;
+  --color-warm-400: #f37d43;
+  --color-warm-500: #e87643;
+  --color-warm-600: #d35a2e;
+  --color-warm-700: #ba4521;
+  --color-warm-800: #94361d;
+  --color-warm-900: #782e1c;
+  
+  /* 字體 */
+  --font-sans: 'Noto Sans TC', 'Noto Sans JP', system-ui, -apple-system, sans-serif;
+  --font-serif: 'Noto Serif TC', 'Noto Serif JP', Georgia, serif;
+  
+  /* 陰影 - 更柔和 */
+  --shadow-soft: 0 1px 3px 0 rgb(0 0 0 / 0.05), 0 1px 2px -1px rgb(0 0 0 / 0.05);
+  --shadow-soft-md: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+  --shadow-soft-lg: 0 10px 15px -3px rgb(0 0 0 / 0.05), 0 4px 6px -4px rgb(0 0 0 / 0.05);
+}
+
+@layer base {
+  body {
+    @apply bg-sand-50 text-gray-800 antialiased font-sans;
+    margin: 0;
+    min-height: 100vh;
+  }
+  
+  * {
+    @apply font-sans;
+  }
+}
+
+@layer components {
+  /* 日式簡約風格元件 */
+  .card-minimal {
+    @apply bg-white rounded-lg p-6 transition-all duration-300;
+    box-shadow: var(--shadow-soft);
+  }
+  
+  .card-minimal:hover {
+    box-shadow: var(--shadow-soft-md);
+  }
+  
+  .btn-primary {
+    @apply bg-sand-600 text-white px-4 py-2 rounded-md hover:bg-sand-700 transition-colors duration-200;
+  }
+  
+  .btn-secondary {
+    @apply bg-white text-sand-700 border border-sand-300 px-4 py-2 rounded-md hover:bg-sand-50 transition-colors duration-200;
+  }
+  
+  .input-minimal {
+    @apply border border-sand-200 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sand-400 focus:border-transparent transition-all duration-200;
+  }
+  
+  .nav-link {
+    @apply text-gray-600 hover:text-sand-700 transition-colors duration-200 border-b-2 border-transparent;
+  }
+  
+  .nav-link-active {
+    @apply text-sand-800 border-sand-600;
+  }
+}

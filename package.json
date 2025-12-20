@@ -1,0 +1,27 @@
+{
+  "name": "steven-blog",
+  "version": "1.0.0",
+  "private": true,
+  "description": "個人部落格系統 - 前台與後台管理",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:frontend": "pnpm --filter blog-frontend dev",
+    "dev:admin": "pnpm --filter blog-admin dev",
+    "dev:all": "pnpm --parallel --filter \"./packages/*\" dev",
+    "build:frontend": "pnpm --filter blog-frontend build",
+    "build:admin": "pnpm --filter blog-admin build",
+    "build:all": "pnpm --parallel --filter \"./packages/*\" build",
+    "preview:frontend": "pnpm --filter blog-frontend preview",
+    "preview:admin": "pnpm --filter blog-admin preview",
+    "lint": "pnpm --parallel --filter \"./packages/*\" lint"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.5"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  }
+}
