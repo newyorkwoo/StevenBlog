@@ -117,16 +117,30 @@
     <!-- 新增/編輯模態框 -->
     <div
       v-if="showAddModal || showEditModal"
-      class="fixed z-10 inset-0 overflow-y-auto"
+      class="fixed z-50 inset-0 overflow-y-auto"
+      aria-labelledby="modal-title"
+      role="dialog"
+      aria-modal="true"
     >
-      <div class="flex items-center justify-center min-h-screen px-4">
+      <div
+        class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0"
+      >
+        <!-- 背景遮罩 -->
         <div
           class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
           @click="closeModal"
         ></div>
 
+        <!-- 居中的容器 -->
+        <span
+          class="hidden sm:inline-block sm:align-middle sm:h-screen"
+          aria-hidden="true"
+          >&#8203;</span
+        >
+
+        <!-- Modal 內容 -->
         <div
-          class="bg-white rounded-lg overflow-hidden shadow-xl transform transition-all max-w-lg w-full"
+          class="relative inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full"
         >
           <form @submit.prevent="handleSubmit">
             <div class="p-6">
@@ -215,17 +229,30 @@ const loadCategories = async () => {
   try {
     const { data, error } = await supabase
       .from("categories")
-      .select("*, post_count:posts(count)")
+      .select("*")
       .order("name");
 
     if (error) throw error;
 
-    categories.value = data.map((cat) => ({
-      ...cat,
-      post_count: cat.post_count?.[0]?.count || 0,
-    }));
+    // 獲取每個分類的文章數量
+    const categoriesWithCount = await Promise.all(
+      data.map(async (cat) => {
+        const { count } = await supabase
+          .from("posts")
+          .select("*", { count: "exact", head: true })
+          .eq("category_id", cat.id);
+
+        return {
+          ...cat,
+          post_count: count || 0,
+        };
+      })
+    );
+
+    categories.value = categoriesWithCount;
   } catch (error) {
     console.error("載入分類失敗:", error);
+    alert("載入分類失敗: " + error.message);
   } finally {
     loading.value = false;
   }

@@ -8,41 +8,20 @@
     <div class="card-minimal mb-8">
       <h3 class="text-xl font-semibold text-secondary-800 mb-4">發表留言</h3>
 
-      <form @submit.prevent="submitComment" class="space-y-4">
-        <div>
-          <label
-            for="author"
-            class="block text-sm font-medium text-secondary-700 mb-2"
-          >
-            姓名 *
-          </label>
-          <input
-            v-model="formData.author"
-            type="text"
-            id="author"
-            required
-            class="input-minimal"
-            placeholder="您的姓名"
-          />
+      <!-- Login Required Message -->
+      <div
+        v-if="!isAuthenticated"
+        class="p-6 bg-sand-50 rounded-lg text-center"
+      >
+        <p class="text-secondary-700 mb-4">您需要登入後才能發表留言</p>
+        <div class="flex gap-4 justify-center">
+          <RouterLink to="/login" class="btn-primary"> 登入 </RouterLink>
+          <RouterLink to="/register" class="btn-secondary"> 註冊 </RouterLink>
         </div>
+      </div>
 
-        <div>
-          <label
-            for="email"
-            class="block text-sm font-medium text-secondary-700 mb-2"
-          >
-            Email *
-          </label>
-          <input
-            v-model="formData.email"
-            type="email"
-            id="email"
-            required
-            class="input-minimal"
-            placeholder="您的 Email（不會公開顯示）"
-          />
-        </div>
-
+      <!-- Comment Form (only for authenticated users) -->
+      <form v-else @submit.prevent="submitComment" class="space-y-4">
         <div>
           <label
             for="content"
@@ -127,22 +106,24 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted, reactive } from "vue";
+import { RouterLink } from "vue-router";
 import { useCommentStore } from "@/stores/comment";
+import { useAuthStore } from "@/stores/auth";
 import { storeToRefs } from "pinia";
 
 const props = defineProps({
   postId: {
-    type: String,
+    type: Number,
     required: true,
   },
 });
 
 const commentStore = useCommentStore();
+const authStore = useAuthStore();
 const { comments, loading } = storeToRefs(commentStore);
+const { isAuthenticated, user, getDisplayName } = storeToRefs(authStore);
 
 const formData = reactive({
-  author: "",
-  email: "",
   content: "",
 });
 
@@ -167,16 +148,15 @@ const submitComment = async () => {
   try {
     const result = await commentStore.createComment({
       post_id: props.postId,
-      author: formData.author,
-      email: formData.email,
+      author: getDisplayName.value,
+      email: user.value.email,
       content: formData.content,
+      user_id: user.value.id,
     });
 
     if (result) {
       submitSuccess.value = true;
       // Reset form
-      formData.author = "";
-      formData.email = "";
       formData.content = "";
 
       // Hide success message after 5 seconds

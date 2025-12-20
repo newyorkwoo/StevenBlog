@@ -83,6 +83,7 @@ CREATE INDEX IF NOT EXISTS idx_post_tags_tag ON public.post_tags(tag_id);
 CREATE TABLE IF NOT EXISTS public.comments (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   post_id UUID REFERENCES public.posts(id) ON DELETE CASCADE NOT NULL,
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
   author VARCHAR(100) NOT NULL,
   email VARCHAR(255) NOT NULL,
   content TEXT NOT NULL,
@@ -94,6 +95,7 @@ CREATE TABLE IF NOT EXISTS public.comments (
 );
 
 -- 建立索引
+CREATE INDEX IF NOT EXISTS idx_comments_user ON public.comments(user_id);
 CREATE INDEX IF NOT EXISTS idx_comments_post ON public.comments(post_id);
 CREATE INDEX IF NOT EXISTS idx_comments_status ON public.comments(status);
 CREATE INDEX IF NOT EXISTS idx_comments_created_at ON public.comments(created_at DESC);
@@ -171,24 +173,37 @@ CREATE POLICY "Only authenticated users can manage post tags"
 ON public.post_tags FOR ALL
 USING (auth.role() = 'authenticated');
 
--- Comments: 已審核留言所有人可讀，所有人可寫入（待審核）
+-- Comments: 已審核留言所有人可讀，已登入用戶可寫入（待審核）
 ALTER TABLE public.comments ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "Approved comments are viewable by everyone"
 ON public.comments FOR SELECT
 USING (status = 'approved' OR auth.role() = 'authenticated');
 
-CREATE POLICY "Anyone can insert comments"
+CREATE POLICY "Authenticated users can insert comments"
 ON public.comments FOR INSERT
-WITH CHECK (true);
+TO authenticated
+WITH CHECK (
+  auth.uid() = user_id
+  AND status = 'pending'
+);
+
+CREATE POLICY "Users can read own pending comments"
+ON public.comments FOR SELECT
+TO authenticated
+USING (
+  auth.uid() = user_id
+  OR status = 'approved'
+);
 
 CREATE POLICY "Only authenticated users can update comments"
 ON public.comments FOR UPDATE
 USING (auth.role() = 'authenticated');
 
-CREATE POLICY "Only authenticated users can delete comments"
+CREATE POLICY "Users can delete own comments"
 ON public.comments FOR DELETE
-USING (auth.role() = 'authenticated');
+TO authenticated
+USING (auth.uid() = user_id OR auth.role() = 'authenticated');
 
 -- Users: 僅管理員可讀寫
 ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;

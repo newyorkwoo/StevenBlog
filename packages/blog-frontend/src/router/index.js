@@ -29,6 +29,21 @@ const router = createRouter({
       name: "about",
       component: () => import("@/views/About.vue"),
     },
+    {
+      path: "/login",
+      name: "login",
+      component: () => import("@/views/Login.vue"),
+    },
+    {
+      path: "/register",
+      name: "register",
+      component: () => import("@/views/Register.vue"),
+    },
+    {
+      path: "/profile",
+      name: "profile",
+      component: () => import("@/views/Profile.vue"),
+    },
   ],
   scrollBehavior(to, from, savedPosition) {
     if (savedPosition) {

@@ -243,6 +243,7 @@ const form = ref({
   status: "draft",
   cover_image: "",
   slug: "",
+  published_at: null,
 });
 
 const tagsInput = ref("");
@@ -272,6 +273,7 @@ const loadPost = async () => {
       status: data.status,
       cover_image: data.cover_image || "",
       slug: data.slug,
+      published_at: data.published_at,
     };
 
     tagsInput.value = data.tags ? data.tags.join(", ") : "";
@@ -396,17 +398,27 @@ const handleSubmit = async () => {
     };
 
     if (isEditMode.value) {
-      // 更新現有文章
+      // 更新現有文章 - 如果沒有 published_at，則設定為當前時間
+      const updateData = {
+        ...postData,
+        published_at: form.value.published_at || new Date().toISOString(),
+      };
+
       const { error } = await supabase
         .from("posts")
-        .update(postData)
+        .update(updateData)
         .eq("id", route.params.id);
 
       if (error) throw error;
       alert("文章更新成功");
     } else {
-      // 新增文章
-      const { error } = await supabase.from("posts").insert([postData]);
+      // 新增文章 - 設定發布時間
+      const newPostData = {
+        ...postData,
+        published_at: new Date().toISOString(),
+      };
+
+      const { error } = await supabase.from("posts").insert([newPostData]);
 
       if (error) throw error;
       alert("文章新增成功");

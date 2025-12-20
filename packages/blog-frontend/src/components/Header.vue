@@ -80,6 +80,58 @@
               />
             </svg>
           </button>
+
+          <!-- User Menu -->
+          <div v-if="authStore.isAuthenticated" class="relative group">
+            <button
+              class="text-secondary-700 hover:text-primary-600 transition-colors font-medium flex items-center"
+            >
+              <svg
+                class="w-5 h-5 mr-1"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                />
+              </svg>
+              {{ authStore.getDisplayName }}
+            </button>
+            <div
+              class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-soft-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200"
+            >
+              <RouterLink
+                to="/profile"
+                class="block px-4 py-2 text-secondary-700 hover:bg-primary-50 hover:text-primary-600 transition-colors first:rounded-t-lg"
+              >
+                個人資料
+              </RouterLink>
+              <button
+                @click="handleLogout"
+                class="block w-full text-left px-4 py-2 text-secondary-700 hover:bg-primary-50 hover:text-primary-600 transition-colors last:rounded-b-lg"
+              >
+                登出
+              </button>
+            </div>
+          </div>
+          <div v-else class="flex items-center space-x-4">
+            <RouterLink
+              to="/login"
+              class="text-secondary-700 hover:text-primary-600 transition-colors font-medium"
+            >
+              登入
+            </RouterLink>
+            <RouterLink
+              to="/register"
+              class="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors text-sm font-medium"
+            >
+              註冊
+            </RouterLink>
+          </div>
         </div>
 
         <!-- Mobile Menu Button -->
@@ -148,6 +200,41 @@
         >
           搜尋
         </button>
+
+        <!-- Auth Links in Mobile Menu -->
+        <div class="border-t border-secondary-100 mt-2 pt-2">
+          <template v-if="isAuthenticated">
+            <RouterLink
+              to="/profile"
+              class="block py-2 text-secondary-700 hover:text-primary-600 transition-colors"
+              @click="closeMobileMenu"
+            >
+              個人資料
+            </RouterLink>
+            <button
+              @click="handleLogout"
+              class="block py-2 text-secondary-700 hover:text-primary-600 transition-colors w-full text-left"
+            >
+              登出
+            </button>
+          </template>
+          <template v-else>
+            <RouterLink
+              to="/login"
+              class="block py-2 text-secondary-700 hover:text-primary-600 transition-colors"
+              @click="closeMobileMenu"
+            >
+              登入
+            </RouterLink>
+            <RouterLink
+              to="/register"
+              class="block py-2 text-secondary-700 hover:text-primary-600 transition-colors"
+              @click="closeMobileMenu"
+            >
+              註冊
+            </RouterLink>
+          </template>
+        </div>
       </div>
     </nav>
 
@@ -182,11 +269,14 @@
 import { ref, onMounted, watch, nextTick } from "vue";
 import { RouterLink, useRouter } from "vue-router";
 import { useCategoryStore } from "@/stores/category";
+import { useAuthStore } from "@/stores/auth";
 import { storeToRefs } from "pinia";
 
 const router = useRouter();
 const categoryStore = useCategoryStore();
+const authStore = useAuthStore();
 const { categories } = storeToRefs(categoryStore);
+const { user, isAuthenticated, getDisplayName } = storeToRefs(authStore);
 
 const mobileMenuOpen = ref(false);
 const searchOpen = ref(false);
@@ -225,6 +315,11 @@ const performSearch = () => {
     router.push({ name: "search", query: { q: searchQuery.value } });
     closeSearch();
   }
+};
+
+const handleLogout = async () => {
+  await authStore.signOut();
+  router.push("/");
 };
 
 watch(searchOpen, (newValue) => {
