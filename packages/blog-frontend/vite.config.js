@@ -13,5 +13,5 @@ export default defineConfig({
   server: {
     port: 3000,
   },
-  base: "/", // 部署到 GitHub Pages 時需要修改為 '/repository-name/'
+  base: process.env.NODE_ENV === "production" ? "/StevenBlog/" : "/",
 });
