@@ -392,6 +392,7 @@ const form = ref({
   category_id: "",
   status: "draft",
   cover_image: "",
+  images: [], // 新增：圖片集
   slug: "",
   published_at: null,
 });
@@ -400,6 +401,8 @@ const tagsInput = ref("");
 const categories = ref([]);
 const saving = ref(false);
 const uploading = ref(false);
+const uploadingImages = ref(false); // 新增：多圖上傳狀態
+const multipleImageInput = ref(null); // 新增：多圖上傳 input ref
 
 const isEditMode = computed(() => !!route.params.id);
 
@@ -422,6 +425,7 @@ const loadPost = async () => {
       category_id: data.category_id,
       status: data.status,
       cover_image: data.cover_image || "",
+      images: data.images || [], // 新增：載入圖片集
       slug: data.slug,
       published_at: data.published_at,
     };
@@ -532,6 +536,111 @@ const handleImageUpload = async (event) => {
   }
 };
 
+// 新增：觸發多圖上傳
+const triggerMultipleImageUpload = () => {
+  if (multipleImageInput.value) {
+    multipleImageInput.value.click();
+  }
+};
+
+// 新增：處理多圖上傳
+const handleMultipleImagesUpload = async (event) => {
+  const files = Array.from(event.target.files);
+
+  if (!files || files.length === 0) return;
+
+  // 檢查上傳數量
+  const remainingSlots = 10 - form.value.images.length;
+  if (files.length > remainingSlots) {
+    alert(`最多只能上傳 ${remainingSlots} 張圖片`);
+    return;
+  }
+
+  uploadingImages.value = true;
+
+  try {
+    const uploadPromises = files.map(async (file) => {
+      // 驗證檔案類型
+      if (!file.type.startsWith("image/")) {
+        throw new Error(`${file.name} 不是有效的圖片格式`);
+      }
+
+      // 驗證檔案大小 (5MB)
+      const maxSize = 5 * 1024 * 1024;
+      if (file.size > maxSize) {
+        throw new Error(`${file.name} 超過 5MB 大小限制`);
+      }
+
+      // 生成唯一檔名
+      const fileExt = file.name.split(".").pop();
+      const fileName = `${Date.now()}-${Math.random()
+        .toString(36)
+        .substring(7)}.${fileExt}`;
+      const filePath = `posts/${fileName}`;
+
+      // 上傳到 Supabase Storage
+      const { error: uploadError } = await supabase.storage
+        .from("post-images")
+        .upload(filePath, file, {
+          cacheControl: "3600",
+          upsert: false,
+        });
+
+      if (uploadError) throw uploadError;
+
+      // 取得公開 URL
+      const { data } = supabase.storage
+        .from("post-images")
+        .getPublicUrl(filePath);
+
+      return {
+        url: data.publicUrl,
+        path: filePath,
+        name: file.name,
+      };
+    });
+
+    const uploadedImages = await Promise.all(uploadPromises);
+    form.value.images.push(...uploadedImages);
+
+    console.log("批次上傳成功:", uploadedImages.length, "張圖片");
+  } catch (error) {
+    console.error("上傳圖片失敗:", error);
+    alert(error.message || "上傳圖片失敗，請重試");
+  } finally {
+    uploadingImages.value = false;
+    // 重置 input
+    if (event.target) {
+      event.target.value = "";
+    }
+  }
+};
+
+// 新增：移除圖片
+const removeImage = (index) => {
+  if (confirm("確定要刪除這張圖片嗎？")) {
+    form.value.images.splice(index, 1);
+  }
+};
+
+// 新增：上移圖片
+const moveImageUp = (index) => {
+  if (index > 0) {
+    const temp = form.value.images[index];
+    form.value.images[index] = form.value.images[index - 1];
+    form.value.images[index - 1] = temp;
+  }
+};
+
+// 新增：下移圖片
+const moveImageDown = (index) => {
+  if (index < form.value.images.length - 1) {
+    const temp = form.value.images[index];
+    form.value.images[index] = form.value.images[index + 1];
+    form.value.images[index + 1] = temp;
+  }
+};
+
 const handleSubmit = async () => {
   saving.value = true;
 
@@ -544,6 +653,7 @@ const handleSubmit = async () => {
       category_id: form.value.category_id,
       status: form.value.status,
       cover_image: form.value.cover_image,
+      images: form.value.images, // 新增：儲存圖片集
       slug: form.value.slug || generateSlug(form.value.title),
     };
 
@@ -588,3 +698,35 @@ onMounted(() => {
   loadPost();
 });
 </script>
+<style scoped>
+/* Masonry 瀑布流布局 */
+.masonry-grid {
+  column-count: 3;
+  column-gap: 1rem;
+  margin-top: 1rem;
+}
+
+@media (max-width: 1024px) {
+  .masonry-grid {
+    column-count: 2;
+  }
+}
+
+@media (max-width: 640px) {
+  .masonry-grid {
+    column-count: 1;
+  }
+}
+
+.masonry-item {
+  break-inside: avoid;
+  margin-bottom: 1rem;
+  position: relative;
+}
+
+.masonry-item img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+</style>
