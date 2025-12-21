@@ -57,7 +57,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { usePostStore } from "@/stores/post";
 import { useCategoryStore } from "@/stores/category";
@@ -71,17 +71,47 @@ const { posts, loading } = storeToRefs(postStore);
 const { categories } = storeToRefs(categoryStore);
 
 const categoryName = computed(() => {
-  const category = categories.value.find((c) => c.slug === route.params.slug);
+  const slug = route.params.slug;
+  if (!slug) return "分類";
+  const category = categories.value.find((c) => c.slug === slug);
   return category?.name || "分類";
 });
 
-onMounted(async () => {
-  await categoryStore.fetchCategories();
-  const category = categories.value.find((c) => c.slug === route.params.slug);
-  if (category) {
-    await postStore.fetchPosts(category.id);
+const loadCategoryPosts = async () => {
+  const slug = route.params.slug;
+  if (!slug) {
+    console.error("No category slug provided");
+    return;
   }
+
+  // 確保分類已載入
+  if (categories.value.length === 0) {
+    await categoryStore.fetchCategories();
+  }
+
+  const category = categories.value.find((c) => c.slug === slug);
+
+  if (category) {
+    console.log("Loading posts for category:", category.name, category.id);
+    await postStore.fetchPosts(category.id, 100); // 增加限制以確保獲取更多文章
+  } else {
+    console.error("Category not found:", slug);
+  }
+};
+
+onMounted(() => {
+  loadCategoryPosts();
 });
+
+// 監聽路由變化，當切換分類時重新加載
+watch(
+  () => route.params.slug,
+  (newSlug, oldSlug) => {
+    if (newSlug && newSlug !== oldSlug) {
+      loadCategoryPosts();
+    }
+  }
+);
 
 const getExcerpt = (content) => {
   if (!content) return "";
