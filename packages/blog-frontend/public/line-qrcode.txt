@@ -1,0 +1,1 @@
+請將 LINE QR Code 圖片命名為 line-qrcode.png 並放置在此目錄
