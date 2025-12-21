@@ -12,6 +12,7 @@ export default defineConfig({
   },
   server: {
     port: 3000,
+    host: true, // 允許局域網訪問
   },
   base: process.env.NODE_ENV === "production" ? "/StevenBlog/" : "/",
 });
