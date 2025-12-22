@@ -189,7 +189,7 @@
 
         <!-- 提示訊息 -->
         <p class="mt-2 text-xs text-gray-500">
-          支援 JPG、PNG、GIF 格式，檔案大小不超過 5MB
+          支援 JPG、PNG、GIF 格式，圖片會自動壓縮至 1MB 以下
         </p>
       </div>
 
@@ -338,7 +338,7 @@
         <p class="mt-4 text-xs text-gray-500">
           • 最多可上傳 10 張圖片<br />
           • 支援 JPG、PNG、GIF 格式<br />
-          • 每張圖片大小不超過 5MB<br />
+          • 圖片會自動壓縮至 1MB 以下<br />
           • 使用 Masonry 瀑布流布局展示
         </p>
       </div>
@@ -381,6 +381,7 @@
 import { ref, computed, onMounted } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { supabase } from "../lib/supabase";
+import { compressImage, formatFileSize } from "../utils/imageCompress";
 
 const router = useRouter();
 const route = useRoute();
@@ -481,15 +482,19 @@ const handleImageUpload = async (event) => {
     return;
   }
 
-  // 檢查檔案大小（限制 5MB）
-  if (file.size > 5 * 1024 * 1024) {
-    alert("圖片大小不能超過 5MB");
-    return;
-  }
-
   uploading.value = true;
   try {
-    const fileExt = file.name.split(".").pop();
+    console.log(`原始圖片: ${file.name}, 大小: ${formatFileSize(file.size)}`);
+
+    // 壓縮圖片至 1MB 以下
+    let compressedFile = file;
+    if (file.size > 1024 * 1024) {
+      console.log("圖片超過 1MB，開始壓縮...");
+      compressedFile = await compressImage(file, 1, 1920, 1920);
+      console.log(`壓縮後大小: ${formatFileSize(compressedFile.size)}`);
+    }
+
+    const fileExt = compressedFile.name.split(".").pop();
     const fileName = `${Date.now()}.${fileExt}`;
     const filePath = `${fileName}`;
 
@@ -497,7 +502,7 @@ const handleImageUpload = async (event) => {
 
     const { error: uploadError } = await supabase.storage
       .from("post-images")
-      .upload(filePath, file, {
+      .upload(filePath, compressedFile, {
         cacheControl: "3600",
         upsert: false,
       });
@@ -538,16 +543,30 @@ const handleImageUpload = async (event) => {
 
 // 新增：觸發多圖上傳
 const triggerMultipleImageUpload = () => {
+  console.log("觸發多圖上傳按鈕被點擊");
+  console.log("multipleImageInput.value:", multipleImageInput.value);
   if (multipleImageInput.value) {
     multipleImageInput.value.click();
+    console.log("已觸發 file input click");
+  } else {
+    console.error("multipleImageInput ref 未正確綁定");
   }
 };
 
 // 新增：處理多圖上傳
 const handleMultipleImagesUpload = async (event) => {
+  console.log("handleMultipleImagesUpload 被調用");
+  console.log("event:", event);
+  console.log("event.target.files:", event.target.files);
+
   const files = Array.from(event.target.files);
 
-  if (!files || files.length === 0) return;
+  if (!files || files.length === 0) {
+    console.log("沒有選擇檔案");
+    return;
+  }
+
+  console.log("選擇了", files.length, "個檔案");
 
   // 檢查上傳數量
   const remainingSlots = 10 - form.value.images.length;
@@ -565,14 +584,22 @@ const handleMultipleImagesUpload = async (event) => {
         throw new Error(`${file.name} 不是有效的圖片格式`);
       }
 
-      // 驗證檔案大小 (5MB)
-      const maxSize = 5 * 1024 * 1024;
-      if (file.size > maxSize) {
-        throw new Error(`${file.name} 超過 5MB 大小限制`);
+      console.log(
+        `處理圖片: ${file.name}, 原始大小: ${formatFileSize(file.size)}`
+      );
+
+      // 壓縮圖片至 1MB 以下
+      let compressedFile = file;
+      if (file.size > 1024 * 1024) {
+        console.log(`壓縮 ${file.name}...`);
+        compressedFile = await compressImage(file, 1, 1920, 1920);
+        console.log(
+          `${file.name} 壓縮後: ${formatFileSize(compressedFile.size)}`
+        );
       }
 
       // 生成唯一檔名
-      const fileExt = file.name.split(".").pop();
+      const fileExt = compressedFile.name.split(".").pop();
       const fileName = `${Date.now()}-${Math.random()
         .toString(36)
         .substring(7)}.${fileExt}`;
@@ -581,7 +608,7 @@ const handleMultipleImagesUpload = async (event) => {
       // 上傳到 Supabase Storage
       const { error: uploadError } = await supabase.storage
         .from("post-images")
-        .upload(filePath, file, {
+        .upload(filePath, compressedFile, {
           cacheControl: "3600",
           upsert: false,
         });

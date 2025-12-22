@@ -73,17 +73,64 @@
       </div>
     </header>
 
-    <!-- Cover Image -->
-    <div v-if="currentPost.cover_image" class="mb-8 rounded-lg overflow-hidden">
-      <img
-        :src="currentPost.cover_image"
-        :alt="currentPost.title"
-        class="w-full"
-      />
+    <!-- All Images Gallery (Masonry Layout) - 封面圖片 + 文章圖片集 -->
+    <div v-if="allImages.length > 0" class="mb-12">
+      <div class="masonry-grid">
+        <div
+          v-for="(image, index) in allImages"
+          :key="index"
+          class="masonry-item cursor-pointer hover:opacity-90 transition-opacity"
+          @click="openLightbox(index)"
+        >
+          <img
+            :src="image.url"
+            :alt="image.alt"
+            class="w-full rounded-lg shadow-md"
+            loading="lazy"
+          />
+        </div>
+      </div>
     </div>
 
     <!-- Post Content -->
     <div class="prose prose-lg max-w-none mb-12" v-html="renderedContent"></div>
+
+    <!-- Lightbox -->
+    <div
+      v-if="lightboxOpen"
+      class="fixed inset-0 z-50 bg-black bg-opacity-90 flex items-center justify-center"
+      @click="closeLightbox"
+    >
+      <button
+        @click="closeLightbox"
+        class="absolute top-4 right-4 text-white text-3xl hover:text-gray-300 z-60"
+      >
+        ×
+      </button>
+      <button
+        v-if="currentImageIndex > 0"
+        @click.stop="previousImage"
+        class="absolute left-4 text-white text-4xl hover:text-gray-300"
+      >
+        ‹
+      </button>
+      <button
+        v-if="currentImageIndex < allImages.length - 1"
+        @click.stop="nextImage"
+        class="absolute right-4 text-white text-4xl hover:text-gray-300"
+      >
+        ›
+      </button>
+      <img
+        :src="allImages[currentImageIndex].url"
+        :alt="allImages[currentImageIndex].alt"
+        class="max-w-[90vw] max-h-[90vh] object-contain"
+        @click.stop
+      />
+      <div class="absolute bottom-4 text-white text-sm">
+        {{ currentImageIndex + 1 }} / {{ allImages.length }}
+      </div>
+    </div>
 
     <!-- Comments Section -->
     <CommentSection :postId="currentPost.id" />
@@ -107,8 +154,37 @@ const router = useRouter();
 const postStore = usePostStore();
 const { currentPost, loading, error } = storeToRefs(postStore);
 
+// Lightbox 相關狀態
+const lightboxOpen = ref(false);
+const currentImageIndex = ref(0);
+
 onMounted(async () => {
   await postStore.fetchPostBySlug(route.params.slug);
+});
+
+// 合併封面圖片和文章圖片集
+const allImages = computed(() => {
+  const images = [];
+
+  // 如果有封面圖片，加入到陣列最前面
+  if (currentPost.value?.cover_image) {
+    images.push({
+      url: currentPost.value.cover_image,
+      alt: currentPost.value.title,
+    });
+  }
+
+  // 加入文章圖片集
+  if (currentPost.value?.images && Array.isArray(currentPost.value.images)) {
+    currentPost.value.images.forEach((image, index) => {
+      images.push({
+        url: image.url,
+        alt: image.name || `圖片 ${index + 1}`,
+      });
+    });
+  }
+
+  return images;
 });
 
 const renderedContent = computed(() => {
@@ -124,6 +200,52 @@ const formatDate = (dateString) => {
     day: "numeric",
   }).format(date);
 };
+
+// Lightbox 功能
+const openLightbox = (index) => {
+  currentImageIndex.value = index;
+  lightboxOpen.value = true;
+  document.body.style.overflow = "hidden"; // 防止背景滾動
+};
+
+const closeLightbox = () => {
+  lightboxOpen.value = false;
+  document.body.style.overflow = ""; // 恢復滾動
+};
+
+const nextImage = () => {
+  if (currentImageIndex.value < allImages.value.length - 1) {
+    currentImageIndex.value++;
+  }
+};
+
+const previousImage = () => {
+  if (currentImageIndex.value > 0) {
+    currentImageIndex.value--;
+  }
+};
+
+// 鍵盤快捷鍵
+const handleKeydown = (event) => {
+  if (!lightboxOpen.value) return;
+
+  if (event.key === "Escape") {
+    closeLightbox();
+  } else if (event.key === "ArrowRight") {
+    nextImage();
+  } else if (event.key === "ArrowLeft") {
+    previousImage();
+  }
+};
+
+onMounted(() => {
+  window.addEventListener("keydown", handleKeydown);
+});
+
+onUnmounted(() => {
+  window.removeEventListener("keydown", handleKeydown);
+  document.body.style.overflow = ""; // 清理
+});
 </script>
 
 <style scoped>
@@ -238,5 +360,34 @@ const formatDate = (dateString) => {
 .prose th {
   background-color: rgb(249 250 251);
   font-weight: 600;
+}
+
+/* Masonry 瀑布流布局 */
+.masonry-grid {
+  column-count: 3;
+  column-gap: 1rem;
+}
+
+@media (max-width: 1024px) {
+  .masonry-grid {
+    column-count: 2;
+  }
+}
+
+@media (max-width: 640px) {
+  .masonry-grid {
+    column-count: 1;
+  }
+}
+
+.masonry-item {
+  break-inside: avoid;
+  margin-bottom: 1rem;
+}
+
+.masonry-item img {
+  display: block;
+  width: 100%;
+  height: auto;
 }
 </style>
