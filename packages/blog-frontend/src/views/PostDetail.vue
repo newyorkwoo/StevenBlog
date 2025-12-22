@@ -147,7 +147,14 @@ import { useRoute, useRouter, RouterLink } from "vue-router";
 import { usePostStore } from "@/stores/post";
 import { storeToRefs } from "pinia";
 import { marked } from "marked";
+import DOMPurify from "dompurify";
 import CommentSection from "@/components/CommentSection.vue";
+
+// 配置 marked
+marked.setOptions({
+  gfm: true,
+  breaks: true,
+});
 
 const route = useRoute();
 const router = useRouter();
@@ -189,7 +196,8 @@ const allImages = computed(() => {
 
 const renderedContent = computed(() => {
   if (!currentPost.value?.content) return "";
-  return marked(currentPost.value.content);
+  const dirty = marked(currentPost.value.content);
+  return DOMPurify.sanitize(dirty);
 });
 
 const formatDate = (dateString) => {

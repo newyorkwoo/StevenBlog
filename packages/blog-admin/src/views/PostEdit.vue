@@ -484,21 +484,15 @@ const handleImageUpload = async (event) => {
 
   uploading.value = true;
   try {
-    console.log(`原始圖片: ${file.name}, 大小: ${formatFileSize(file.size)}`);
-
     // 壓縮圖片至 1MB 以下
     let compressedFile = file;
     if (file.size > 1024 * 1024) {
-      console.log("圖片超過 1MB，開始壓縮...");
       compressedFile = await compressImage(file, 1, 1920, 1920);
-      console.log(`壓縮後大小: ${formatFileSize(compressedFile.size)}`);
     }
 
     const fileExt = compressedFile.name.split(".").pop();
     const fileName = `${Date.now()}.${fileExt}`;
     const filePath = `${fileName}`;
-
-    console.log("開始上傳圖片:", filePath);
 
     const { error: uploadError } = await supabase.storage
       .from("post-images")
@@ -517,7 +511,6 @@ const handleImageUpload = async (event) => {
       .getPublicUrl(filePath);
 
     form.value.cover_image = data.publicUrl;
-    console.log("圖片上傳成功:", data.publicUrl);
   } catch (error) {
     console.error("上傳圖片失敗:", error);
 
@@ -543,11 +536,8 @@ const handleImageUpload = async (event) => {
 
 // 新增：觸發多圖上傳
 const triggerMultipleImageUpload = () => {
-  console.log("觸發多圖上傳按鈕被點擊");
-  console.log("multipleImageInput.value:", multipleImageInput.value);
   if (multipleImageInput.value) {
     multipleImageInput.value.click();
-    console.log("已觸發 file input click");
   } else {
     console.error("multipleImageInput ref 未正確綁定");
   }
@@ -555,18 +545,11 @@ const triggerMultipleImageUpload = () => {
 
 // 新增：處理多圖上傳
 const handleMultipleImagesUpload = async (event) => {
-  console.log("handleMultipleImagesUpload 被調用");
-  console.log("event:", event);
-  console.log("event.target.files:", event.target.files);
-
   const files = Array.from(event.target.files);
 
   if (!files || files.length === 0) {
-    console.log("沒有選擇檔案");
     return;
   }
-
-  console.log("選擇了", files.length, "個檔案");
 
   // 檢查上傳數量
   const remainingSlots = 10 - form.value.images.length;
@@ -584,18 +567,10 @@ const handleMultipleImagesUpload = async (event) => {
         throw new Error(`${file.name} 不是有效的圖片格式`);
       }
 
-      console.log(
-        `處理圖片: ${file.name}, 原始大小: ${formatFileSize(file.size)}`
-      );
-
       // 壓縮圖片至 1MB 以下
       let compressedFile = file;
       if (file.size > 1024 * 1024) {
-        console.log(`壓縮 ${file.name}...`);
         compressedFile = await compressImage(file, 1, 1920, 1920);
-        console.log(
-          `${file.name} 壓縮後: ${formatFileSize(compressedFile.size)}`
-        );
       }
 
       // 生成唯一檔名
@@ -629,8 +604,6 @@ const handleMultipleImagesUpload = async (event) => {
 
     const uploadedImages = await Promise.all(uploadPromises);
     form.value.images.push(...uploadedImages);
-
-    console.log("批次上傳成功:", uploadedImages.length, "張圖片");
   } catch (error) {
     console.error("上傳圖片失敗:", error);
     alert(error.message || "上傳圖片失敗，請重試");

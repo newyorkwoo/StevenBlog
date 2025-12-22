@@ -52,7 +52,7 @@ const router = createRouter({
   routes,
 });
 
-// 路由守衛 - 檢查認證狀態
+// 路由守衛 - 檢查認證狀態和管理員權限
 router.beforeEach(async (to, from, next) => {
   const requiresAuth = to.matched.some((record) => record.meta.requiresAuth);
 
@@ -63,6 +63,16 @@ router.beforeEach(async (to, from, next) => {
   if (requiresAuth && !session) {
     // 需要認證但未登入，導向登入頁
     next("/login");
+  } else if (requiresAuth && session) {
+    // 檢查是否為管理員
+    const role = session.user?.user_metadata?.role;
+    if (role !== "admin") {
+      alert("您沒有權限訪問後台管理系統");
+      await supabase.auth.signOut();
+      next("/login");
+      return;
+    }
+    next();
   } else if (to.path === "/login" && session) {
     // 已登入但訪問登入頁，導向首頁
     next("/");
