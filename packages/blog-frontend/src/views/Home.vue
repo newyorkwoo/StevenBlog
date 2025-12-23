@@ -13,11 +13,7 @@
     </section>
 
     <!-- Loading State -->
-    <div v-if="loading" class="flex justify-center py-12">
-      <div
-        class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"
-      ></div>
-    </div>
+    <SkeletonLoader v-if="loading" />
 
     <!-- Error State -->
     <div v-else-if="error" class="text-center py-12">
@@ -107,6 +103,7 @@ import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { usePostStore } from "@/stores/post";
 import { storeToRefs } from "pinia";
+import SkeletonLoader from "@/components/SkeletonLoader.vue";
 
 const router = useRouter();
 const postStore = usePostStore();

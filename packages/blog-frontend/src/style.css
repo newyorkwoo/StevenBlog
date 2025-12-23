@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=Noto+Serif+TC:wght@400;600&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=Noto+Serif+TC:wght@400;600&display=swap");
 @import "tailwindcss";
 
 /* Tailwind CSS v4 主題配置 */
@@ -14,7 +14,7 @@
   --color-primary-700: #6f5c45;
   --color-primary-800: #5c4c3a;
   --color-primary-900: #4d4033;
-  
+
   --color-secondary-50: #f7f7f6;
   --color-secondary-100: #e3e3e3;
   --color-secondary-200: #c8c8c8;
@@ -25,7 +25,7 @@
   --color-secondary-700: #434343;
   --color-secondary-800: #383838;
   --color-secondary-900: #313131;
-  
+
   --color-accent-50: #fef5ee;
   --color-accent-100: #fde8d7;
   --color-accent-200: #facead;
@@ -36,14 +36,17 @@
   --color-accent-700: #ba2c13;
   --color-accent-800: #942517;
   --color-accent-900: #782116;
-  
+
   /* 字體 */
-  --font-sans: 'Noto Sans TC', 'Noto Sans JP', system-ui, -apple-system, sans-serif;
-  --font-serif: 'Noto Serif TC', 'Noto Serif JP', Georgia, serif;
-  
+  --font-sans: "Noto Sans TC", "Noto Sans JP", system-ui, -apple-system,
+    sans-serif;
+  --font-serif: "Noto Serif TC", "Noto Serif JP", Georgia, serif;
+
   /* 陰影 */
-  --shadow-soft: 0 2px 15px -3px rgb(0 0 0 / 0.07), 0 10px 20px -2px rgb(0 0 0 / 0.04);
-  --shadow-soft-lg: 0 10px 40px -15px rgb(0 0 0 / 0.1), 0 20px 35px -10px rgb(0 0 0 / 0.06);
+  --shadow-soft: 0 2px 15px -3px rgb(0 0 0 / 0.07),
+    0 10px 20px -2px rgb(0 0 0 / 0.04);
+  --shadow-soft-lg: 0 10px 40px -15px rgb(0 0 0 / 0.1),
+    0 20px 35px -10px rgb(0 0 0 / 0.06);
 }
 
 @layer base {
@@ -58,28 +61,38 @@
     @apply bg-white rounded-lg p-6 transition-shadow duration-300;
     box-shadow: var(--shadow-soft);
   }
-  
+
   .card-minimal:hover {
     box-shadow: var(--shadow-soft-lg);
   }
-  
+
   .btn-minimal {
     @apply px-6 py-2 rounded-md text-sm font-medium transition-all duration-200;
   }
-  
+
   .btn-primary {
     @apply px-6 py-2 rounded-md text-sm font-medium transition-all duration-200 bg-primary-600 text-white hover:bg-primary-700;
   }
-  
+
   .btn-secondary {
     @apply px-6 py-2 rounded-md text-sm font-medium transition-all duration-200 bg-secondary-100 text-secondary-700 hover:bg-secondary-200;
   }
-  
+
   .input-minimal {
     @apply w-full px-4 py-2 border border-secondary-200 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all;
   }
-  
+
   .link-minimal {
     @apply text-primary-600 hover:text-primary-700 transition-colors duration-200;
+  }
+
+  /* 懒加载图片样式 */
+  img.lazy-loading {
+    filter: blur(5px);
+    transition: filter 0.3s;
+  }
+
+  img.lazy-loaded {
+    filter: blur(0);
   }
 }

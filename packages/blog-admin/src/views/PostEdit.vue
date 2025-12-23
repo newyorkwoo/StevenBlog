@@ -381,7 +381,11 @@
 import { ref, computed, onMounted } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { supabase } from "../lib/supabase";
-import { compressImage, formatFileSize } from "../utils/imageCompress";
+import {
+  compressImageAsync,
+  compressImagesParallel,
+  formatFileSize,
+} from "../utils/imageCompressOptimized";
 
 const router = useRouter();
 const route = useRoute();
@@ -484,10 +488,10 @@ const handleImageUpload = async (event) => {
 
   uploading.value = true;
   try {
-    // 壓縮圖片至 1MB 以下
+    // 使用 Web Worker 异步压缩图片至 1MB 以下
     let compressedFile = file;
     if (file.size > 1024 * 1024) {
-      compressedFile = await compressImage(file, 1, 1920, 1920);
+      compressedFile = await compressImageAsync(file, 1, 1920, 1920);
     }
 
     const fileExt = compressedFile.name.split(".").pop();
@@ -561,36 +565,41 @@ const handleMultipleImagesUpload = async (event) => {
   uploadingImages.value = true;
 
   try {
-    const uploadPromises = files.map(async (file) => {
-      // 驗證檔案類型
+    // 使用并行压缩优化性能
+    const needCompress = files.filter((f) => f.size > 1024 * 1024);
+    const noCompress = files.filter((f) => f.size <= 1024 * 1024);
+
+    let compressedFiles = [];
+    if (needCompress.length > 0) {
+      compressedFiles = await compressImagesParallel(needCompress, 1);
+    }
+
+    const allFiles = [...noCompress, ...compressedFiles];
+
+    const uploadPromises = allFiles.map(async (file) => {
+      // 验证文件类型
       if (!file.type.startsWith("image/")) {
-        throw new Error(`${file.name} 不是有效的圖片格式`);
+        throw new Error(`${file.name} 不是有效的图片格式`);
       }
 
-      // 壓縮圖片至 1MB 以下
-      let compressedFile = file;
-      if (file.size > 1024 * 1024) {
-        compressedFile = await compressImage(file, 1, 1920, 1920);
-      }
-
-      // 生成唯一檔名
-      const fileExt = compressedFile.name.split(".").pop();
+      // 生成唯一文件名
+      const fileExt = file.name.split(".").pop();
       const fileName = `${Date.now()}-${Math.random()
         .toString(36)
         .substring(7)}.${fileExt}`;
       const filePath = `posts/${fileName}`;
 
-      // 上傳到 Supabase Storage
+      // 上传到 Supabase Storage
       const { error: uploadError } = await supabase.storage
         .from("post-images")
-        .upload(filePath, compressedFile, {
+        .upload(filePath, file, {
           cacheControl: "3600",
           upsert: false,
         });
 
       if (uploadError) throw uploadError;
 
-      // 取得公開 URL
+      // 获取公开 URL
       const { data } = supabase.storage
         .from("post-images")
         .getPublicUrl(filePath);
@@ -605,8 +614,8 @@ const handleMultipleImagesUpload = async (event) => {
     const uploadedImages = await Promise.all(uploadPromises);
     form.value.images.push(...uploadedImages);
   } catch (error) {
-    console.error("上傳圖片失敗:", error);
-    alert(error.message || "上傳圖片失敗，請重試");
+    console.error("上传图片失败:", error);
+    alert(error.message || "上传图片失败，请重试");
   } finally {
     uploadingImages.value = false;
     // 重置 input
