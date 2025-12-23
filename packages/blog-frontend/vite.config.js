@@ -12,7 +12,29 @@ export default defineConfig({
   },
   server: {
     port: 3000,
-    host: true, // 允許局域網訪問
+    host: true,
   },
   base: process.env.NODE_ENV === "production" ? "/StevenBlog/" : "/",
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          "vendor-vue": ["vue", "vue-router", "pinia"],
+          "vendor-supabase": ["@supabase/supabase-js"],
+          "vendor-markdown": ["marked", "dompurify"],
+        },
+      },
+    },
+    chunkSizeWarningLimit: 600,
+    minify: "terser",
+    terserOptions: {
+      compress: {
+        drop_console: true,
+        drop_debugger: true,
+      },
+    },
+  },
+  optimizeDeps: {
+    include: ["vue", "vue-router", "pinia", "@supabase/supabase-js"],
+  },
 });

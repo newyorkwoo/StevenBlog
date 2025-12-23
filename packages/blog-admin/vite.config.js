@@ -12,6 +12,34 @@ export default defineConfig({
   },
   server: {
     port: 5200,
-    host: true, // 允許局域網訪問
+    host: true,
+  },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          "vendor-vue": ["vue", "vue-router", "pinia"],
+          "vendor-supabase": ["@supabase/supabase-js"],
+          "vendor-editor": ["@vueup/vue-quill"],
+        },
+      },
+    },
+    chunkSizeWarningLimit: 600,
+    minify: "terser",
+    terserOptions: {
+      compress: {
+        drop_console: true,
+        drop_debugger: true,
+      },
+    },
+  },
+  optimizeDeps: {
+    include: [
+      "vue",
+      "vue-router",
+      "pinia",
+      "@supabase/supabase-js",
+      "@vueup/vue-quill",
+    ],
   },
 });

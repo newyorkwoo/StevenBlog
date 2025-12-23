@@ -161,9 +161,12 @@ const router = useRouter();
 const postStore = usePostStore();
 const { currentPost, loading, error } = storeToRefs(postStore);
 
-// Lightbox 相關狀態
+// Lightbox 相关状态
 const lightboxOpen = ref(false);
 const currentImageIndex = ref(0);
+
+// Markdown 渲染缓存
+const markdownCache = new Map();
 
 onMounted(async () => {
   await postStore.fetchPostBySlug(route.params.slug);
@@ -196,8 +199,25 @@ const allImages = computed(() => {
 
 const renderedContent = computed(() => {
   if (!currentPost.value?.content) return "";
+
+  const cacheKey = `${currentPost.value.id}-${currentPost.value.updated_at}`;
+
+  if (markdownCache.has(cacheKey)) {
+    return markdownCache.get(cacheKey);
+  }
+
   const dirty = marked(currentPost.value.content);
-  return DOMPurify.sanitize(dirty);
+  const clean = DOMPurify.sanitize(dirty);
+
+  markdownCache.set(cacheKey, clean);
+
+  // 限制缓存大小
+  if (markdownCache.size > 10) {
+    const firstKey = markdownCache.keys().next().value;
+    markdownCache.delete(firstKey);
+  }
+
+  return clean;
 });
 
 const formatDate = (dateString) => {

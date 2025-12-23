@@ -2,14 +2,43 @@ import { defineStore } from "pinia";
 import { ref, computed } from "vue";
 import { supabase } from "@/lib/supabase";
 
+// 缓存配置
+const CACHE_DURATION = 5 * 60 * 1000; // 5 分钟
+const cache = new Map();
+
+function getCacheKey(type, params) {
+  return `${type}-${JSON.stringify(params)}`;
+}
+
+function getFromCache(key) {
+  const cached = cache.get(key);
+  if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+    return cached.data;
+  }
+  cache.delete(key);
+  return null;
+}
+
+function setCache(key, data) {
+  cache.set(key, { data, timestamp: Date.now() });
+}
+
 export const usePostStore = defineStore("post", () => {
   const posts = ref([]);
   const currentPost = ref(null);
   const loading = ref(false);
   const error = ref(null);
 
-  // 獲取所有已發布的文章
+  // 获取所有已发布的文章（带缓存）
   const fetchPosts = async (categoryId = null, limit = 10, offset = 0) => {
+    const cacheKey = getCacheKey("posts", { categoryId, limit, offset });
+    const cached = getFromCache(cacheKey);
+
+    if (cached) {
+      posts.value = cached;
+      return cached;
+    }
+
     loading.value = true;
     error.value = null;
 
@@ -18,7 +47,14 @@ export const usePostStore = defineStore("post", () => {
         .from("posts")
         .select(
           `
-          *,
+          id,
+          title,
+          slug,
+          excerpt,
+          cover_image,
+          published_at,
+          read_time,
+          category_id,
           categories(id, name, slug),
           post_tags(tags(id, name, slug))
         `
@@ -36,6 +72,7 @@ export const usePostStore = defineStore("post", () => {
       if (fetchError) throw fetchError;
 
       posts.value = data;
+      setCache(cacheKey, data);
       return data;
     } catch (err) {
       error.value = err.message;
@@ -46,8 +83,16 @@ export const usePostStore = defineStore("post", () => {
     }
   };
 
-  // 根據 slug 獲取單篇文章
+  // 根据 slug 获取单篇文章（带缓存）
   const fetchPostBySlug = async (slug) => {
+    const cacheKey = getCacheKey("post", { slug });
+    const cached = getFromCache(cacheKey);
+
+    if (cached) {
+      currentPost.value = cached;
+      return cached;
+    }
+
     loading.value = true;
     error.value = null;
 
@@ -68,6 +113,7 @@ export const usePostStore = defineStore("post", () => {
       if (fetchError) throw fetchError;
 
       currentPost.value = data;
+      setCache(cacheKey, data);
       return data;
     } catch (err) {
       error.value = err.message;
