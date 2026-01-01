@@ -25,43 +25,37 @@ async function compressImage(
   maxWidth = 1920,
   maxHeight = 1920
 ) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
+  try {
+    // Use createImageBitmap which is available in Web Workers
+    const imageBitmap = await createImageBitmap(file);
 
-    reader.onload = (e) => {
-      const img = new Image();
+    let width = imageBitmap.width;
+    let height = imageBitmap.height;
 
-      img.onload = () => {
-        let width = img.width;
-        let height = img.height;
+    // Calculate scaled dimensions
+    if (width > maxWidth || height > maxHeight) {
+      const aspectRatio = width / height;
+      if (width > height) {
+        width = maxWidth;
+        height = width / aspectRatio;
+      } else {
+        height = maxHeight;
+        width = height * aspectRatio;
+      }
+    }
 
-        if (width > maxWidth || height > maxHeight) {
-          const aspectRatio = width / height;
-          if (width > height) {
-            width = maxWidth;
-            height = width / aspectRatio;
-          } else {
-            height = maxHeight;
-            width = height * aspectRatio;
-          }
-        }
+    // Use OffscreenCanvas (available in workers)
+    const canvas = new OffscreenCanvas(width, height);
+    const ctx = canvas.getContext("2d");
+    ctx.drawImage(imageBitmap, 0, 0, width, height);
 
-        const canvas = new OffscreenCanvas(width, height);
-        const ctx = canvas.getContext("2d");
-        ctx.drawImage(img, 0, 0, width, height);
+    // Clean up
+    imageBitmap.close();
 
-        compressToTargetSize(canvas, file, maxSizeMB)
-          .then(resolve)
-          .catch(reject);
-      };
-
-      img.onerror = () => reject(new Error("图片加载失败"));
-      img.src = e.target.result;
-    };
-
-    reader.onerror = () => reject(new Error("读取文件失败"));
-    reader.readAsDataURL(file);
-  });
+    return await compressToTargetSize(canvas, file, maxSizeMB);
+  } catch (error) {
+    throw new Error(`图片处理失败: ${error.message}`);
+  }
 }
 
 async function compressToTargetSize(canvas, originalFile, maxSizeMB) {
