@@ -9,9 +9,11 @@
 **Supabase 环境变量:**
 
 ```
-VITE_SUPABASE_URL=https://whrepkzawberbcycqgxi.supabase.co
-VITE_SUPABASE_ANON_KEY=sb_publishable_yjRiVp22GqKOOtM2XmnNhA_-shaRSxS
+VITE_SUPABASE_URL=https://your-project-id.supabase.co
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
 ```
+
+> ⚠️ 请从 Supabase Dashboard > Settings > API 获取实际值
 
 ---
 
@@ -56,14 +58,14 @@ Branch to deploy: main
 
 ```
 Variable: VITE_SUPABASE_URL
-Value: https://whrepkzawberbcycqgxi.supabase.co
+Value: （从 Supabase Dashboard 获取你的项目 URL）
 ```
 
 **再次点击 "Add environment variable" 添加第二个：**
 
 ```
 Variable: VITE_SUPABASE_ANON_KEY
-Value: sb_publishable_yjRiVp22GqKOOtM2XmnNhA_-shaRSxS
+Value: （从 Supabase Dashboard 获取你的 Anon Key）
 ```
 
 ⚠️ **重要：** 确保没有多余的空格，完全照抄上面的内容

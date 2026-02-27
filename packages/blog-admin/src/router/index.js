@@ -64,8 +64,8 @@ router.beforeEach(async (to, from, next) => {
     // 需要認證但未登入，導向登入頁
     next("/login");
   } else if (requiresAuth && session) {
-    // 檢查是否為管理員
-    const role = session.user?.user_metadata?.role;
+    // 檢查是否為管理員（使用 app_metadata，不可被用戶自行修改）
+    const role = session.user?.app_metadata?.role;
     if (role !== "admin") {
       alert("您沒有權限訪問後台管理系統");
       await supabase.auth.signOut();

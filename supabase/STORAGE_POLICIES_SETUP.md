@@ -46,7 +46,7 @@ Policy name: Only admins can upload images
 Allowed operation: INSERT
 Target roles: authenticated
 Policy definition - WITH CHECK expression:
-bucket_id = 'post-images' AND (auth.jwt() -> 'user_metadata' ->> 'role') = 'admin'
+bucket_id = 'post-images' AND (auth.jwt() -> 'app_metadata' ->> 'role') = 'admin'
 ```
 
 點擊 **Review** > **Save policy**
@@ -62,7 +62,7 @@ Policy name: Only admins can update images
 Allowed operation: UPDATE
 Target roles: authenticated
 Policy definition - USING expression:
-bucket_id = 'post-images' AND (auth.jwt() -> 'user_metadata' ->> 'role') = 'admin'
+bucket_id = 'post-images' AND (auth.jwt() -> 'app_metadata' ->> 'role') = 'admin'
 ```
 
 點擊 **Review** > **Save policy**
@@ -78,7 +78,7 @@ Policy name: Only admins can delete images
 Allowed operation: DELETE
 Target roles: authenticated
 Policy definition - USING expression:
-bucket_id = 'post-images' AND (auth.jwt() -> 'user_metadata' ->> 'role') = 'admin'
+bucket_id = 'post-images' AND (auth.jwt() -> 'app_metadata' ->> 'role') = 'admin'
 ```
 
 點擊 **Review** > **Save policy**
@@ -150,7 +150,7 @@ A: 請確認：
 3. 在瀏覽器 Console 檢查 JWT token：
    ```javascript
    const { data } = await supabase.auth.getSession();
-   console.log(data.session.user.user_metadata.role);
+   console.log(data.session.user.app_metadata.role);
    // 應該顯示 "admin"
    ```
 

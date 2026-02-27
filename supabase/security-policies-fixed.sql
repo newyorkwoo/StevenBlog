@@ -47,7 +47,7 @@ CREATE POLICY "Only admins can insert posts"
 ON posts FOR INSERT
 TO authenticated
 WITH CHECK (
-  (auth.jwt() -> 'user_metadata' ->> 'role') = 'admin'
+  (auth.jwt() -> 'app_metadata' ->> 'role') = 'admin'
 );
 
 -- 只有管理員可以更新文章
@@ -55,7 +55,7 @@ CREATE POLICY "Only admins can update posts"
 ON posts FOR UPDATE
 TO authenticated
 USING (
-  (auth.jwt() -> 'user_metadata' ->> 'role') = 'admin'
+  (auth.jwt() -> 'app_metadata' ->> 'role') = 'admin'
 );
 
 -- 只有管理員可以刪除文章
@@ -63,7 +63,7 @@ CREATE POLICY "Only admins can delete posts"
 ON posts FOR DELETE
 TO authenticated
 USING (
-  (auth.jwt() -> 'user_metadata' ->> 'role') = 'admin'
+  (auth.jwt() -> 'app_metadata' ->> 'role') = 'admin'
 );
 
 -- ====================================
@@ -81,7 +81,7 @@ CREATE POLICY "Only admins can insert categories"
 ON categories FOR INSERT
 TO authenticated
 WITH CHECK (
-  (auth.jwt() -> 'user_metadata' ->> 'role') = 'admin'
+  (auth.jwt() -> 'app_metadata' ->> 'role') = 'admin'
 );
 
 -- 只有管理員可以更新分類
@@ -89,7 +89,7 @@ CREATE POLICY "Only admins can update categories"
 ON categories FOR UPDATE
 TO authenticated
 USING (
-  (auth.jwt() -> 'user_metadata' ->> 'role') = 'admin'
+  (auth.jwt() -> 'app_metadata' ->> 'role') = 'admin'
 );
 
 -- 只有管理員可以刪除分類
@@ -97,7 +97,7 @@ CREATE POLICY "Only admins can delete categories"
 ON categories FOR DELETE
 TO authenticated
 USING (
-  (auth.jwt() -> 'user_metadata' ->> 'role') = 'admin'
+  (auth.jwt() -> 'app_metadata' ->> 'role') = 'admin'
 );
 
 -- ====================================
@@ -128,7 +128,7 @@ ON comments FOR UPDATE
 TO authenticated
 USING (
   auth.uid() = user_id OR
-  (auth.jwt() -> 'user_metadata' ->> 'role') = 'admin'
+  (auth.jwt() -> 'app_metadata' ->> 'role') = 'admin'
 );
 
 -- 用戶可以刪除自己的留言，或管理員可以刪除任何留言
@@ -137,7 +137,7 @@ ON comments FOR DELETE
 TO authenticated
 USING (
   auth.uid() = user_id OR
-  (auth.jwt() -> 'user_metadata' ->> 'role') = 'admin'
+  (auth.jwt() -> 'app_metadata' ->> 'role') = 'admin'
 );
 
 -- ====================================
@@ -155,7 +155,7 @@ CREATE POLICY "Only admins can insert tags"
 ON tags FOR INSERT
 TO authenticated
 WITH CHECK (
-  (auth.jwt() -> 'user_metadata' ->> 'role') = 'admin'
+  (auth.jwt() -> 'app_metadata' ->> 'role') = 'admin'
 );
 
 -- 只有管理員可以更新標籤
@@ -163,7 +163,7 @@ CREATE POLICY "Only admins can update tags"
 ON tags FOR UPDATE
 TO authenticated
 USING (
-  (auth.jwt() -> 'user_metadata' ->> 'role') = 'admin'
+  (auth.jwt() -> 'app_metadata' ->> 'role') = 'admin'
 );
 
 -- 只有管理員可以刪除標籤
@@ -171,7 +171,7 @@ CREATE POLICY "Only admins can delete tags"
 ON tags FOR DELETE
 TO authenticated
 USING (
-  (auth.jwt() -> 'user_metadata' ->> 'role') = 'admin'
+  (auth.jwt() -> 'app_metadata' ->> 'role') = 'admin'
 );
 
 -- ====================================
@@ -189,7 +189,7 @@ CREATE POLICY "Only admins can insert post_tags"
 ON post_tags FOR INSERT
 TO authenticated
 WITH CHECK (
-  (auth.jwt() -> 'user_metadata' ->> 'role') = 'admin'
+  (auth.jwt() -> 'app_metadata' ->> 'role') = 'admin'
 );
 
 -- 只有管理員可以刪除文章標籤關聯
@@ -197,7 +197,7 @@ CREATE POLICY "Only admins can delete post_tags"
 ON post_tags FOR DELETE
 TO authenticated
 USING (
-  (auth.jwt() -> 'user_metadata' ->> 'role') = 'admin'
+  (auth.jwt() -> 'app_metadata' ->> 'role') = 'admin'
 );
 
 -- ====================================
@@ -219,7 +219,7 @@ USING (
 -- Target roles: authenticated
 -- WITH CHECK expression: 
 --   bucket_id = 'post-images' AND
---   (auth.jwt() -> 'user_metadata' ->> 'role') = 'admin'
+--   (auth.jwt() -> 'app_metadata' ->> 'role') = 'admin'
 
 -- 規則 3: 只有管理員可以更新圖片
 -- Policy name: Only admins can update images
@@ -227,7 +227,7 @@ USING (
 -- Target roles: authenticated
 -- USING expression:
 --   bucket_id = 'post-images' AND
---   (auth.jwt() -> 'user_metadata' ->> 'role') = 'admin'
+--   (auth.jwt() -> 'app_metadata' ->> 'role') = 'admin'
 
 -- 規則 4: 只有管理員可以刪除圖片
 -- Policy name: Only admins can delete images
@@ -235,7 +235,7 @@ USING (
 -- Target roles: authenticated
 -- USING expression:
 --   bucket_id = 'post-images' AND
---   (auth.jwt() -> 'user_metadata' ->> 'role') = 'admin'
+--   (auth.jwt() -> 'app_metadata' ->> 'role') = 'admin'
 
 -- ====================================
 -- 8. 建立 post-images bucket（如果不存在）

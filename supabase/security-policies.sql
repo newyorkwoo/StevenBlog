@@ -31,7 +31,7 @@ CREATE POLICY "Only admins can insert posts"
 ON posts FOR INSERT
 TO authenticated
 WITH CHECK (
-  (auth.jwt() -> 'user_metadata' ->> 'role') = 'admin'
+  (auth.jwt() -> 'app_metadata' ->> 'role') = 'admin'
 );
 
 -- 只有管理員可以更新文章
@@ -40,7 +40,7 @@ CREATE POLICY "Only admins can update posts"
 ON posts FOR UPDATE
 TO authenticated
 USING (
-  (auth.jwt() -> 'user_metadata' ->> 'role') = 'admin'
+  (auth.jwt() -> 'app_metadata' ->> 'role') = 'admin'
 );
 
 -- 只有管理員可以刪除文章
@@ -49,7 +49,7 @@ CREATE POLICY "Only admins can delete posts"
 ON posts FOR DELETE
 TO authenticated
 USING (
-  (auth.jwt() -> 'user_metadata' ->> 'role') = 'admin'
+  (auth.jwt() -> 'app_metadata' ->> 'role') = 'admin'
 );
 
 -- 3. Categories 表格政策
@@ -66,7 +66,7 @@ CREATE POLICY "Only admins can manage categories"
 ON categories FOR ALL
 TO authenticated
 USING (
-  (auth.jwt() -> 'user_metadata' ->> 'role') = 'admin'
+  (auth.jwt() -> 'app_metadata' ->> 'role') = 'admin'
 );
 
 -- 4. Comments 表格政策
@@ -98,7 +98,7 @@ ON comments FOR DELETE
 TO authenticated
 USING (
   auth.uid() = user_id OR
-  (auth.jwt() -> 'user_metadata' ->> 'role') = 'admin'
+  (auth.jwt() -> 'app_metadata' ->> 'role') = 'admin'
 );
 
 -- 5. Tags 表格政策
@@ -115,7 +115,7 @@ CREATE POLICY "Only admins can manage tags"
 ON tags FOR ALL
 TO authenticated
 USING (
-  (auth.jwt() -> 'user_metadata' ->> 'role') = 'admin'
+  (auth.jwt() -> 'app_metadata' ->> 'role') = 'admin'
 );
 
 -- 6. Post_Tags 表格政策
@@ -132,7 +132,7 @@ CREATE POLICY "Only admins can manage post_tags"
 ON post_tags FOR ALL
 TO authenticated
 USING (
-  (auth.jwt() -> 'user_metadata' ->> 'role') = 'admin'
+  (auth.jwt() -> 'app_metadata' ->> 'role') = 'admin'
 );
 
 -- 7. Storage 政策（post-images bucket）
@@ -150,7 +150,7 @@ ON storage.objects FOR INSERT
 TO authenticated
 WITH CHECK (
   bucket_id = 'post-images' AND
-  (auth.jwt() -> 'user_metadata' ->> 'role') = 'admin'
+  (auth.jwt() -> 'app_metadata' ->> 'role') = 'admin'
 );
 
 -- 只有管理員可以更新圖片
@@ -160,7 +160,7 @@ ON storage.objects FOR UPDATE
 TO authenticated
 USING (
   bucket_id = 'post-images' AND
-  (auth.jwt() -> 'user_metadata' ->> 'role') = 'admin'
+  (auth.jwt() -> 'app_metadata' ->> 'role') = 'admin'
 );
 
 -- 只有管理員可以刪除圖片
@@ -170,7 +170,7 @@ ON storage.objects FOR DELETE
 TO authenticated
 USING (
   bucket_id = 'post-images' AND
-  (auth.jwt() -> 'user_metadata' ->> 'role') = 'admin'
+  (auth.jwt() -> 'app_metadata' ->> 'role') = 'admin'
 );
 
 -- ====================================

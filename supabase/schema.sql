@@ -262,7 +262,10 @@ ALTER PUBLICATION supabase_realtime ADD TABLE public.comments;
 -- =====================================================
 
 -- 文章列表視圖（包含分類和標籤）
-CREATE OR REPLACE VIEW public.posts_with_details AS
+-- 使用 security_invoker = true 確保以查詢者權限執行 RLS
+CREATE OR REPLACE VIEW public.posts_with_details
+WITH (security_invoker = true)
+AS
 SELECT 
   p.*,
   c.name as category_name,

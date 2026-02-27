@@ -8,9 +8,11 @@
 ### 环境变数
 
 ```
-VITE_SUPABASE_URL=https://whrepkzawberbcycqgxi.supabase.co
-VITE_SUPABASE_ANON_KEY=sb_publishable_yjRiVp22GqKOOtM2XmnNhA_-shaRSxS
+VITE_SUPABASE_URL=https://your-project-id.supabase.co
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
 ```
+
+> ⚠️ 请从 Supabase Dashboard > Settings > API 获取实际值
 
 ---
 
@@ -52,12 +54,12 @@ Publish directory: packages/blog-admin/dist
 添加第一个变量：
 
 - **Key:** `VITE_SUPABASE_URL`
-- **Value:** `https://whrepkzawberbcycqgxi.supabase.co`
+- **Value:** `（从 Supabase Dashboard 获取你的项目 URL）`
 
 点击 **"New variable"** 再添加：
 
 - **Key:** `VITE_SUPABASE_ANON_KEY`
-- **Value:** `sb_publishable_yjRiVp22GqKOOtM2XmnNhA_-shaRSxS`
+- **Value:** `（从 Supabase Dashboard 获取你的 Anon Key）`
 
 ### 6️⃣ 开始部署
 

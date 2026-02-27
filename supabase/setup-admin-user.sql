@@ -4,10 +4,11 @@
 
 -- 方法 1: 如果您知道管理員的 email
 -- 將 'your-admin-email@example.com' 替換為實際的管理員 email
+-- 注意：使用 raw_app_meta_data（而非 raw_user_meta_data）因為 app_metadata 不可被用戶自行修改
 
 UPDATE auth.users 
-SET raw_user_meta_data = jsonb_set(
-  COALESCE(raw_user_meta_data, '{}'::jsonb),
+SET raw_app_meta_data = jsonb_set(
+  COALESCE(raw_app_meta_data, '{}'::jsonb),
   '{role}',
   '"admin"'
 )
@@ -19,8 +20,8 @@ WHERE email = 'your-admin-email@example.com';
 -- ====================================
 
 -- UPDATE auth.users 
--- SET raw_user_meta_data = jsonb_set(
---   COALESCE(raw_user_meta_data, '{}'::jsonb),
+-- SET raw_app_meta_data = jsonb_set(
+--   COALESCE(raw_app_meta_data, '{}'::jsonb),
 --   '{role}',
 --   '"admin"'
 -- )
@@ -35,7 +36,7 @@ SELECT
     id,
     email,
     created_at,
-    raw_user_meta_data->>'role' as current_role
+    raw_app_meta_data->>'role' as current_role
 FROM auth.users
 ORDER BY created_at DESC;
 
@@ -48,10 +49,10 @@ ORDER BY created_at DESC;
 SELECT 
     id,
     email,
-    raw_user_meta_data->>'role' as role,
+    raw_app_meta_data->>'role' as role,
     created_at
 FROM auth.users
-WHERE raw_user_meta_data->>'role' = 'admin';
+WHERE raw_app_meta_data->>'role' = 'admin';
 
 -- 應該會看到您設定的管理員帳號
 

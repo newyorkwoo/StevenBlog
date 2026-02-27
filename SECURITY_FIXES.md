@@ -64,19 +64,19 @@ VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...（很長的字串
 
 這個文件包含：
 
-- ✅ 基於角色的管理員權限檢查 (`auth.jwt() -> 'user_metadata' ->> 'role'`)
+- ✅ 基於角色的管理員權限檢查 (`auth.jwt() -> 'app_metadata' ->> 'role'`)
 - ✅ 嚴格的 Storage 存取控制
 - ✅ 正確的留言權限管理
 
 ### 步驟 4: 設定管理員角色
 
-確保您的管理員帳號有正確的 `user_metadata`：
+確保您的管理員帳號有正確的 `app_metadata`（不可被用戶自行修改）：
 
 ```sql
 -- 在 Supabase SQL Editor 執行
 UPDATE auth.users
-SET raw_user_meta_data = jsonb_set(
-  COALESCE(raw_user_meta_data, '{}'::jsonb),
+SET raw_app_meta_data = jsonb_set(
+  COALESCE(raw_app_meta_data, '{}'::jsonb),
   '{role}',
   '"admin"'
 )

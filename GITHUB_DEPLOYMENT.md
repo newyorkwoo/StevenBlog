@@ -53,13 +53,13 @@ git push origin main
 **Secret 1: VITE_SUPABASE_URL**
 
 - Name: `VITE_SUPABASE_URL`
-- Value: `https://whrepkzawberbcycqgxi.supabase.co`
+- Value: `（从 Supabase Dashboard 获取你的项目 URL）`
 - 點擊 **Add secret**
 
 **Secret 2: VITE_SUPABASE_ANON_KEY**
 
 - Name: `VITE_SUPABASE_ANON_KEY`
-- Value: `sb_publishable_yjRiVp22GqKOOtM2XmnNhA_-shaRSxS`
+- Value: `（从 Supabase Dashboard 获取你的 Anon Key）`
 - 點擊 **Add secret**
 
 #### 步驟 C: 驗證 Secrets 已新增
@@ -127,7 +127,6 @@ git push origin main
 2. 點擊最新的 workflow run
 
 3. 查看部署進度：
-
    - ✅ **build** job - 建置前台
    - ✅ **deploy** job - 部署到 GitHub Pages
 
